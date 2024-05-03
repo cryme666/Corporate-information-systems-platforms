@@ -6,7 +6,7 @@ public interface IDateAndCopy
     object DeepCopy();
 }
 
-public class Person : IDateAndCopy, IEquatable<Person>
+public class Person : IDateAndCopy, IEquatable<Person>, IComparable<Person>,  IComparer<Person> 
 {
     protected string _firstName;
     protected string _lastName;
@@ -90,4 +90,26 @@ public class Person : IDateAndCopy, IEquatable<Person>
     {
         return !(person1 == person2);
     }
+
+
+    public int CompareTo(Person other)
+    {
+        if (other == null)
+            return 1;
+
+        return string.Compare(this.LastName, other.LastName, StringComparison.Ordinal);
+    }
+
+    public int Compare(Person x, Person y)
+    {
+        if (x == null && y == null)
+            return 0;
+        if (x == null)
+            return -1;
+        if (y == null)
+            return 1;
+
+        return DateTime.Compare(x.BirthDate, y.BirthDate);
+    }
+
 }
