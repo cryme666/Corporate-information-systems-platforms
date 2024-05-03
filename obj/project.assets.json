@@ -13,11 +13,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\dotnet\\laba2\\laba1.csproj",
-      "projectName": "laba1",
-      "projectPath": "D:\\dotnet\\laba2\\laba1.csproj",
+      "projectUniqueName": "D:\\dotnet\\laba3\\laba2.csproj",
+      "projectName": "laba2",
+      "projectPath": "D:\\dotnet\\laba3\\laba2.csproj",
       "packagesPath": "C:\\Users\\Valentyn\\.nuget\\packages\\",
-      "outputPath": "D:\\dotnet\\laba2\\obj\\",
+      "outputPath": "D:\\dotnet\\laba3\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Valentyn\\AppData\\Roaming\\NuGet\\NuGet.Config",

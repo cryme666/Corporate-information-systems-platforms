@@ -1,115 +1,141 @@
 using System;
+using System.Collections.Generic;
 
-public interface IDateAndCopy
+public class Student : Person, IDateAndCopy 
 {
-    DateTime Date { get; set; }
-    object DeepCopy();
-}
+    private Education _educationForm;
+    private int _groupNumber;
+    private List<Exam> _exams;
+    private List<Test> _tests;
 
-public class Person : IDateAndCopy, IEquatable<Person>, IComparable<Person>,  IComparer<Person> 
-{
-    protected string _firstName;
-    protected string _lastName;
-    protected DateTime _birthDate;
-
-    public Person(string firstName, string lastName, DateTime birthDate)
+    public Student(Person person, Education educationForm, int groupNumber) 
+        : base(person.FirstName, person.LastName, person.BirthDate)
     {
-        FirstName = firstName;
-        LastName = lastName;
-        BirthDate = birthDate;
+        EducationForm = educationForm;
+        GroupNumber = groupNumber;
+        _exams = new List<Exam>();
+        _tests = new List<Test>();
     }
 
-    public Person() : this("Valentyn", "Vikovan", new DateTime(2004, 06, 21))
+    public Student() : this(new Person(), Education.Bachelor, 0)
     {
     }
 
-    public string FirstName
+    public List<Exam> Exams
     {
-        get { return _firstName; }
-        set { _firstName = value; }
+        get { return _exams; }
+        set { _exams = value ?? throw new ArgumentNullException(nameof(Exams)); }
     }
 
-    public string LastName
+    public List<Test> Tests
     {
-        get { return _lastName; }
-        set { _lastName = value; }
+        get { return _tests; }
+        set { _tests = value ?? throw new ArgumentNullException(nameof(Tests)); }
     }
 
-    public DateTime BirthDate
+    public double AverageMark
     {
-        get { return _birthDate; }
-        set { _birthDate = value; }
-    }
+        get
+        { 
+            if (_exams.Count == 0)
+                return 0;
 
-    public int BirthYear
-    {
-        get { return _birthDate.Year; }
-        set { _birthDate = new DateTime(value, _birthDate.Month, _birthDate.Day); }
+            double totalMarks = 0;
+            foreach (Exam exam in _exams)
+            {
+                totalMarks += exam.Mark;
+            }
+            return totalMarks / _exams.Count;
+        }
     }
 
     public override string ToString()
     {
-        return $"{FirstName} {LastName}, Birth Date: {_birthDate}";
+        string studentInfo = base.ToString(); 
+        string educationInfo = $"Education Form: {EducationForm}\nGroup Number: {GroupNumber}\n";
+        string examsInfo = "Exams:\n";
+        foreach (Exam exam in _exams)
+        {
+            examsInfo += exam.ToString() + "\n";
+        }
+        string testsInfo = "Tests:\n";
+        foreach (Test test in _tests)
+        {
+            testsInfo += test.ToString() + "\n";
+        }
+        return studentInfo + "\n" + educationInfo + "\n" + examsInfo + testsInfo;
     }
 
-    public virtual object DeepCopy()
+    public virtual string ToShortString()
     {
-        return new Person(FirstName, LastName, BirthDate);
+        return $"{base.ToString()}, Education Form: {EducationForm}, Group Number: {GroupNumber}, Average Mark: {AverageMark}";
     }
 
-    public DateTime Date
+    public override object DeepCopy()
     {
-        get { return _birthDate; }
-        set { _birthDate = value; }
+        Student copiedStudent = new Student((Person)Person.DeepCopy(), EducationForm, GroupNumber);
+        copiedStudent.Date = Date;
+
+        List<Exam> copiedExams = new List<Exam>();
+        foreach (Exam exam in _exams)
+        {
+            copiedExams.Add((Exam)exam.DeepCopy());
+        }
+        copiedStudent.Exams = copiedExams;
+
+        List<Test> copiedTests = new List<Test>();
+        foreach (Test test in _tests)
+        {
+            copiedTests.Add((Test)test.DeepCopy());
+        }
+        copiedStudent.Tests = copiedTests;
+
+        return copiedStudent;
     }
 
-    public bool Equals(Person? other)
+    public int GroupNumber
     {
-        if (other is null)
-            return false;
-        return FirstName == other.FirstName && LastName == other.LastName && BirthDate == other.BirthDate;
+        get { return _groupNumber; }
+        set
+        {
+            if (value < 100 || value > 699)
+            {
+                throw new ArgumentOutOfRangeException(nameof(GroupNumber), $"The group number must be between 100 and 699. Set value: {value}");
+            }         
+            _groupNumber = value;
+        }
     }
 
-    public override int GetHashCode()
-    { 
-        return HashCode.Combine(FirstName, LastName, BirthDate);
-    }
-
-    public static bool operator ==(Person person1, Person person2)
+    public IEnumerable<object> GetAllExamsAndTests()
     {
-        if (ReferenceEquals(person1, person2))
-            return true;
+        foreach (Exam exam in _exams)
+        {
+            yield return exam;
+        }
 
-        if (person1 is null || person2 is null)
-            return false;
-
-        return person1.Equals(person2);
+        foreach (Test test in _tests)
+        {
+            yield return test;
+        }
     }
 
-    public static bool operator !=(Person person1, Person person2)
+    public IEnumerable<Exam> GetExamsWithGradeGreaterThan(int grade)
     {
-        return !(person1 == person2);
+        foreach (Exam exam in _exams)
+        {
+            if (exam.Mark > grade)
+            {
+                yield return exam;
+            }
+        }
     }
 
-
-    public int CompareTo(Person other)
+    public void AddTests(params Test[] tests)
     {
-        if (other == null)
-            return 1;
-
-        return string.Compare(this.LastName, other.LastName, StringComparison.Ordinal);
-    }
-
-    public int Compare(Person x, Person y)
-    {
-        if (x == null && y == null)
-            return 0;
-        if (x == null)
-            return -1;
-        if (y == null)
-            return 1;
-
-        return DateTime.Compare(x.BirthDate, y.BirthDate);
+        if (_tests == null)
+            _tests = new List<Test>();
+        
+        _tests.AddRange(tests);
     }
 
 }

@@ -1,159 +1,108 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 
 public class Student : Person, IDateAndCopy 
 {
     private Education _educationForm;
     private int _groupNumber;
-    private ArrayList _exams;
+    private List<Exam> _exams;
+    private List<Test> _tests;
 
-     private List<Test> _tests;
-
-    // Конструктор з параметрами для ініціалізації відповідних полів класу
     public Student(Person person, Education educationForm, int groupNumber) 
         : base(person.FirstName, person.LastName, person.BirthDate)
     {
         EducationForm = educationForm;
         GroupNumber = groupNumber;
-        Exams = new ArrayList();
+        _exams = new List<Exam>();
+        _tests = new List<Test>();
     }
 
-    // Конструктор без параметрів для ініціалізації за замовчуванням
     public Student() : this(new Person(), Education.Bachelor, 0)
     {
     }
 
-    public Person Person
+    public List<Exam> Exams
     {
-        get { return new Person(FirstName, LastName, BirthDate); }
-        init
-        {
-            FirstName = value.FirstName;
-            LastName = value.LastName;
-            BirthDate = value.BirthDate;
-        }
+        get { return _exams; }
+        set { _exams = value; }
     }
 
- 
+    public List<Test> Tests
+    {
+        get { return _tests; }
+        set { _tests = value; }
+    }
+
     public double AverageMark
     {
         get
         { 
-
-            if (Exams is null || Exams.Count == 0)
+            if (_exams.Count == 0)
                 return 0;
 
             double totalMarks = 0;
-            foreach (Exam exam in Exams)
+            foreach (Exam exam in _exams)
             {
                 totalMarks += exam.Mark;
             }
-            return totalMarks / Exams.Count;
-        }
-    }
-    public ArrayList Exams
-    {
-        get { return _exams; }
-        init { _exams = value; }
-    }
-
-    public Education EducationForm
-{
-    get { return _educationForm; }
-    init { _educationForm = value; }
-}
-
-
-    public void AddExams(params Exam[] exams)
-    {
-        foreach (Exam exam in exams)
-        {
-            _exams.Add(exam);
+            return totalMarks / _exams.Count;
         }
     }
 
     public override string ToString()
     {
         string studentInfo = base.ToString(); 
-
         string educationInfo = $"Education Form: {EducationForm}\nGroup Number: {GroupNumber}\n";
-
         string examsInfo = "Exams:\n";
         foreach (Exam exam in _exams)
         {
             examsInfo += exam.ToString() + "\n";
         }
-
-        return studentInfo + "\n" + educationInfo + "\n" + examsInfo;
+        string testsInfo = "Tests:\n";
+        foreach (Test test in _tests)
+        {
+            testsInfo += test.ToString() + "\n";
+        }
+        return studentInfo + "\n" + educationInfo + "\n" + examsInfo + testsInfo;
     }
 
     public virtual string ToShortString()
     {
-                //! to change name convention 
-
         return $"{base.ToString()}, Education Form: {EducationForm}, Group Number: {GroupNumber}, Average Mark: {AverageMark}";
     }
 
-
- public DateTime Date { get; set; }
-
- public override object DeepCopy()
+    public override object DeepCopy()
     {
         Student copiedStudent = new Student((Person)Person.DeepCopy(), EducationForm, GroupNumber);
         copiedStudent.Date = Date;
-        var list = new ArrayList();
 
-        if (_exams is not null)
-        foreach(var exam in _exams) list.Add(((Exam)exam).DeepCopy());
+        List<Exam> copiedExams = new List<Exam>();
+        foreach (Exam exam in _exams)
+        {
+            copiedExams.Add((Exam)exam.DeepCopy());
+        }
+        copiedStudent.Exams = copiedExams;
 
-        copiedStudent._exams = list;
+        List<Test> copiedTests = new List<Test>();
+        foreach (Test test in _tests)
+        {
+            copiedTests.Add((Test)test.DeepCopy());
+        }
+        copiedStudent.Tests = copiedTests;
+
         return copiedStudent;
     }
 
-public int GroupNumber
-{
-    get => _groupNumber;
-    set
+    public int GroupNumber
     {
-        if (value < 100 || value > 699)
+        get { return _groupNumber; }
+        set
         {
-            throw new ArgumentOutOfRangeException(nameof(GroupNumber), $"The group number must be between 100 and 699. Set value: {value}");
-        }         
-
-        _groupNumber = value;
-    }
-}
-    public IEnumerable<object> GetAllExamsAndTests()
-    {
-        foreach (Exam exam in _exams)
-        {
-            yield return exam;
-        }
-
-        foreach (Test test in _tests)
-        {
-            yield return test;
-        }
-    }
-
-    public IEnumerable<Exam> GetExamsWithGradeGreaterThan(int grade)
-    {
-        foreach (Exam exam in _exams)
-        {
-            if (exam.Mark > grade)
+            if (value < 100 || value > 699)
             {
-                yield return exam;
-            }
+                throw new ArgumentOutOfRangeException(nameof(GroupNumber), $"The group number must be between 100 and 699. Set value: {value}");
+            }         
+            _groupNumber = value;
         }
     }
-
-    public void AddTests(params Test[] tests)
-{
-    if (_tests == null)
-        _tests = new List<Test>();
-    
-    _tests.AddRange(tests);
-}
-
 }
